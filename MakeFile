@@ -1,0 +1,4 @@
+run:
+	docker run -d --name spring -e POSTGRES_PASSWORD=root -p 5432:5432 --rm postgres
+stop:
+	docker stop spring
