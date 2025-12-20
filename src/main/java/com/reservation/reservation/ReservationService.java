@@ -3,30 +3,36 @@ package com.reservation.reservation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class ReservationService {
     private final Map<Long, Reservation> reservationMap;
     private final AtomicLong idCounter;
+    private final ReservationRepository repository;
 
-    public ReservationService() {
+    public ReservationService(ReservationRepository repository) {
+        this.repository = repository;
         reservationMap = new HashMap<>();
         idCounter = new AtomicLong();
     }
 
     public Reservation getReservationById(Long id) {
-        if (!reservationMap.containsKey(id)) {
-            throw new NoSuchElementException("Not found reservation By id: " + id);
-        }
-        return reservationMap.get(id);
+        ReservationEntity repo = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Not found reservation By id: " + id));
+
+        return toDomainREservation(repo);
+
     }
 
     public List<Reservation> getAllReservation() {
-        return reservationMap.values().stream().toList();
+        List<ReservationEntity> allEntities = repository.findAll();
+
+        return allEntities.stream().map(this::toDomainREservation).toList();
     }
 
     public Reservation createReservation(Reservation reservataionToCreate) {
@@ -104,6 +110,17 @@ public class ReservationService {
             }
         }
         return false;
+    }
+
+    private Reservation toDomainREservation(ReservationEntity reservation) {
+        return new Reservation(
+                reservation.getId(),
+                reservation.getUserId(),
+                reservation.getRoomId(),
+                reservation.getEndDate(),
+                reservation.getStartDate(),
+                reservation.getStatus());
+
     }
 
 }

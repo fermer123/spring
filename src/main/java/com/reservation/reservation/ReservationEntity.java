@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,7 +26,11 @@ public class ReservationEntity {
     private LocalDate endDate;
     @Column(name = "start_date")
     private LocalDate startDate;
+    @Enumerated(EnumType.STRING)
     private ReservationStatus status;
+
+    public ReservationEntity() {
+    }
 
     public ReservationEntity(Long id, Long userId, Long roomId, LocalDate endDate, LocalDate startDate,
             ReservationStatus status) {
