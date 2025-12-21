@@ -53,7 +53,7 @@ public class ReservationsController {
     public ResponseEntity<Reservation> updateReservation(@PathVariable("id") Long id,
             @RequestBody Reservation reservataionToCreate) {
         log.info("Called updateReservation");
-        var updated = reservationService.updateReservation(reservataionToCreate);
+        var updated = reservationService.updateReservation(id);
         return ResponseEntity.ok(updated);
     }
 
