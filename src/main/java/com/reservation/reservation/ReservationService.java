@@ -1,8 +1,6 @@
 package com.reservation.reservation;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -10,14 +8,11 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class ReservationService {
-    private final Map<Long, Reservation> reservationMap;
 
     private final ReservationRepository repository;
 
     public ReservationService(ReservationRepository repository) {
         this.repository = repository;
-        reservationMap = new HashMap<>();
-
     }
 
     public Reservation getReservationById(Long id) {
@@ -78,37 +73,39 @@ public class ReservationService {
     }
 
     public Reservation approveReservation(Long id) {
-        if (!reservationMap.containsKey(id)) {
-            throw new IllegalArgumentException("Id shout be empty");
-        }
-        var reservation = reservationMap.get(id);
-        if (reservation.status() != ReservationStatus.PENDING) {
+
+        var reservationEntity = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Not found reservation By id: " + id));
+
+        if (reservationEntity.getStatus() != ReservationStatus.PENDING) {
             throw new IllegalArgumentException("Cannot approve reservation status");
         }
-        var isCOnflict = isReservationConflict(reservation);
+        var isCOnflict = isReservationConflict(reservationEntity);
+
         if (isCOnflict) {
             throw new IllegalArgumentException("Cannot approve reservation because is conflict");
         }
-        var approveReservation = new Reservation(reservation.id(), reservation.userId(),
-                reservation.roomId(), reservation.endDate(), reservation.startDate(),
-                ReservationStatus.APPROVED);
-        reservationMap.put(id, approveReservation);
-        return approveReservation;
+
+        reservationEntity.setStatus(ReservationStatus.APPROVED);
+        repository.save(reservationEntity);
+
+        return toDomainREservation(reservationEntity);
     }
 
-    private boolean isReservationConflict(Reservation reservation) {
-        for (Reservation existingReservation : reservationMap.values()) {
-            if (reservation.id().equals(existingReservation.id())) {
+    private boolean isReservationConflict(ReservationEntity reservation) {
+        var allReservation = repository.findAll();
+        for (ReservationEntity existingReservation : allReservation) {
+            if (reservation.getId().equals(existingReservation.getId())) {
                 continue;
             }
-            if (!reservation.roomId().equals(existingReservation.roomId())) {
+            if (!reservation.getRoomId().equals(existingReservation.getRoomId())) {
                 continue;
             }
-            if (existingReservation.status().equals(ReservationStatus.APPROVED)) {
+            if (existingReservation.getStatus().equals(ReservationStatus.APPROVED)) {
                 continue;
             }
-            if (reservation.startDate().isBefore(existingReservation.endDate())
-                    && existingReservation.endDate().isBefore(reservation.endDate())) {
+            if (reservation.getStartDate().isBefore(existingReservation.getEndDate())
+                    && existingReservation.getEndDate().isBefore(reservation.getEndDate())) {
                 return true;
             }
         }
