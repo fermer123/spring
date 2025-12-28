@@ -33,6 +33,10 @@ public class ReservationService {
         if (reservataionToCreate.id() != null) {
             throw new IllegalArgumentException("Id shout be empty");
         }
+        if (!reservataionToCreate.endDate().isAfter(reservataionToCreate.startDate())) {
+            throw new IllegalArgumentException("endDate cannot be after startDate");
+        }
+
         if (reservataionToCreate.status() != null) {
             throw new IllegalArgumentException("Status shout be empty");
 
