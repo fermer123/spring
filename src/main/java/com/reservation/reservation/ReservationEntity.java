@@ -18,7 +18,7 @@ public class ReservationEntity {
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
     @Column(name = "room_id")
     private Long roomId;

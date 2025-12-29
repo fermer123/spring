@@ -58,6 +58,9 @@ public class ReservationService {
         var reservationEntity = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Not found reservation By id: " + id));
 
+        if (!reservationEntity.getEndDate().isAfter(reservationEntity.getStartDate())) {
+            throw new IllegalArgumentException("endDate cannot be after startDate");
+        }
         if (reservationEntity.getStatus() != ReservationStatus.PENDING) {
             throw new IllegalArgumentException("Cannot modify reservation status: " + reservationEntity.getStatus());
         }
